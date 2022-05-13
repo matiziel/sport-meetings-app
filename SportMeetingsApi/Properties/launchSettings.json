@@ -4,8 +4,8 @@
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iisExpress": {
-      "applicationUrl": "http://localhost:40865",
-      "sslPort": 44324
+      "applicationUrl": "http://localhost:3037",
+      "sslPort": 44368
     }
   },
   "profiles": {
@@ -17,7 +17,7 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "WebApi": {
+    "SportMeetingsApi": {
       "commandName": "Project",
       "dotnetRunMessages": "true",
       "launchBrowser": true,

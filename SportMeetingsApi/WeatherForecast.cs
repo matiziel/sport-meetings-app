@@ -1,7 +1,9 @@
 using System;
 
-namespace WebApi {
-    public class WeatherForecast {
+namespace SportMeetingsApi
+{
+    public class WeatherForecast
+    {
         public DateTime Date { get; set; }
 
         public int TemperatureC { get; set; }
