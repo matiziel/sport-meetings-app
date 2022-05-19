@@ -1,10 +1,9 @@
-#nullable enable
+using System;
+using Microsoft.AspNetCore.Identity;
 
-namespace SportMeetingsApi.Persistence {
-    public class User {
-        public int Id { get; set; }
-        public string Email { get; set; } = default!;
-        public string PasswordHash { get; set; } = default!;
-        public string? Name { get; set; }
-    }
+namespace SportMeetingsApi.Persistence;
+
+public class User : IdentityUser {
+    public string? RefreshToken { get; set; }
+    public DateTime RefreshTokenExpiryTime { get; set; }
 }
