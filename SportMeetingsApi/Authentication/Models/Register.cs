@@ -2,14 +2,12 @@ using System.ComponentModel.DataAnnotations;
 
 namespace SportMeetingsApi.Authentication.Models;
 
-public class RegisterModel {
+public record Register(
     [Required(ErrorMessage = "User Name is required")]
-    public string? Username { get; set; }
-
+    string Username,
     [EmailAddress]
     [Required(ErrorMessage = "Email is required")]
-    public string? Email { get; set; }
-
+    string Email,
     [Required(ErrorMessage = "Password is required")]
-    public string? Password { get; set; }
-}
+    string Password
+);

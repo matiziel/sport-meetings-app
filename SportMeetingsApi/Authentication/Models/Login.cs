@@ -2,11 +2,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace SportMeetingsApi.Authentication.Models;
 
-public class Login {
-
+public record Login(
     [Required(ErrorMessage = "User Name is required")]
-    public string? Username { get; set; }
-
+    string Username,
     [Required(ErrorMessage = "Password is required")]
-    public string? Password { get; set; }
-}
+    string Password
+);
