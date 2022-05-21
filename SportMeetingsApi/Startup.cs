@@ -22,15 +22,20 @@ using SportMeetingsApi.Shared.Settings;
 
 namespace SportMeetingsApi {
     public class Startup {
-        public Startup(IConfiguration configuration) {
-            Configuration = configuration;
-        }
-
         public IConfiguration Configuration { get; }
+
+        public Startup(IWebHostEnvironment env) {
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(env.ContentRootPath)
+                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
+
+            Configuration = builder.Build();
+        }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services) {
 
+            services.AddOptions();
             services.Configure<JwtSettings>(Configuration.GetSection("JwtSettings"));
 
             services.AddDbContext<DatabaseContext>(options =>
@@ -42,32 +47,7 @@ namespace SportMeetingsApi {
                 .AddEntityFrameworkStores<DatabaseContext>()
                 .AddDefaultTokenProviders();
 
-            services
-            .AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-            .AddJwtBearer(options =>
-            {
-                options.SaveToken = true;
-                options.RequireHttpsMetadata = false;
-                options.TokenValidationParameters = new TokenValidationParameters()
-                {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    ClockSkew = TimeSpan.Zero,
-
-                    ValidAudience = Configuration.GetSection("JwtSettings").GetValue<string>("ValidAudience"),
-                    ValidIssuer = Configuration.GetSection("JwtSettings").GetValue<string>("ValidIssuer"),
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
-                        Configuration.GetSection("JwtSettings").GetValue<string>("Secret")
-                    ))
-                };
-            });
+            services.RegisterAuthenticationComponents(Configuration.GetSection(nameof(JwtSettings)).Get<JwtSettings>());
 
             services.AddControllers();
             services.AddSwaggerGen(c => {
@@ -87,6 +67,7 @@ namespace SportMeetingsApi {
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints => {

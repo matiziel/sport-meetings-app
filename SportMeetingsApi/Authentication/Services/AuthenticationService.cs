@@ -15,6 +15,8 @@ using SportMeetingsApi.Persistence;
 using SportMeetingsApi.Shared.Models;
 using SportMeetingsApi.Shared.Settings;
 using System.Linq;
+using Microsoft.Extensions.Options;
+using SportMeetingsApi.Authentication.Settings;
 
 namespace SportMeetingsApi.Authentication.Services;
 
@@ -24,41 +26,45 @@ public class AuthenticationService {
     private readonly JwtSettings _jwtSettings;
 
     public AuthenticationService(
-        UserManager<User> userManager, RoleManager<IdentityRole> roleManager, JwtSettings jwtSettings) {
+        UserManager<User> userManager, RoleManager<IdentityRole> roleManager, IOptions<JwtSettings> jwtSettings) {
         _userManager = userManager;
         _roleManager = roleManager;
-        _jwtSettings = jwtSettings;
+        _jwtSettings = jwtSettings.Value;
     }
 
     public async Task<Either<Error, TokenModel>> Login(Login model) {
+        try {
+            var user = await _userManager.FindByNameAsync(model.Username);
 
-        var user = await _userManager.FindByNameAsync(model.Username);
+            if (user == null || !await _userManager.CheckPasswordAsync(user, model.Password))
+                return Left(new Error("Incorrect email or password"));
 
-        if (user == null || !await _userManager.CheckPasswordAsync(user, model.Password))
-            return Left(new Error("Incorrect email or password"));
+            var authClaims = new List<Claim> {
+                new Claim(ClaimTypes.Name, user.UserName),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            };
 
-        var authClaims = new List<Claim> {
-            new Claim(ClaimTypes.Name, user.UserName),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-        };
+            foreach (var userRole in await _userManager.GetRolesAsync(user)) {
+                authClaims.Add(new Claim(ClaimTypes.Role, userRole));
+            }
 
-        foreach (var userRole in await _userManager.GetRolesAsync(user)) {
-            authClaims.Add(new Claim(ClaimTypes.Role, userRole));
+            var token = CreateToken(authClaims);
+            var refreshToken = GenerateRefreshToken();
+
+            user.RefreshToken = refreshToken;
+            user.RefreshTokenExpiryTime = DateTime.Now.AddDays(_jwtSettings.RefreshTokenValidityInDays);
+
+            await _userManager.UpdateAsync(user);
+
+            return new TokenModel(
+                AccessToken: new JwtSecurityTokenHandler().WriteToken(token),
+                RefreshToken: refreshToken,
+                Expiration: token.ValidTo
+            );
         }
-
-        var token = CreateToken(authClaims);
-        var refreshToken = GenerateRefreshToken();
-
-        user.RefreshToken = refreshToken;
-        user.RefreshTokenExpiryTime = DateTime.Now.AddDays(_jwtSettings.RefreshTokenValidityInDays);
-
-        await _userManager.UpdateAsync(user);
-
-        return new TokenModel(
-            AccessToken: new JwtSecurityTokenHandler().WriteToken(token),
-            RefreshToken: refreshToken,
-            Expiration: token.ValidTo
-        );
+        catch (Exception ex) {
+            return Left(new Error(ex.Message));
+        }
     }
 
     private static string GenerateRefreshToken() {
@@ -82,53 +88,72 @@ public class AuthenticationService {
     }
 
     public async Task<Either<Error, RegisterResponse>> Register(Register model) {
-        var userExists = await _userManager.FindByNameAsync(model.Username);
-        if (userExists != null)
-            return Left(new Error("User already exists!"));
+        try {
+            var userExists = await _userManager.FindByNameAsync(model.Username);
+            if (userExists != null)
+                return Left(new Error("User already exists!"));
 
-        User user = new() {
-            Email = model.Email,
-            SecurityStamp = Guid.NewGuid().ToString(),
-            UserName = model.Username
-        };
-        var result = await _userManager.CreateAsync(user, model.Password);
-        if (!result.Succeeded)
-            return Left(new Error("User creation failed! Please check user details and try again."));
+            User user = new() {
+                Email = model.Email,
+                SecurityStamp = Guid.NewGuid().ToString(),
+                UserName = model.Username
+            };
+            var result = await _userManager.CreateAsync(user, model.Password);
+            if (!result.Succeeded)
+                return Left(new Error("User creation failed! Please check user details and try again."));
 
-        return new RegisterResponse(Message: "User created successfully!");
+            return new RegisterResponse(Message: "User created successfully!");
+        }
+        catch (Exception ex) {
+            return Left(new Error(ex.Message));
+        }
     }
-
+    
     public async Task<Either<Error, TokenModel>> RefreshToken(RefreshTokenModel refreshTokenModel) {
+        try {
+            string accessToken = refreshTokenModel.AccessToken;
+            string refreshToken = refreshTokenModel.RefreshToken;
 
-        string accessToken = refreshTokenModel.AccessToken;
-        string refreshToken = refreshTokenModel.RefreshToken;
+            var principal = GetPrincipalFromExpiredToken(accessToken);
+            if (principal.IsNone)
+                return Left(new Error("Invalid access token or refresh token"));
 
-        var principal = GetPrincipalFromExpiredToken(accessToken);
-        if (principal == null) {
-            return Left(new Error("Invalid access token or refresh token"));
+            string username = principal.Match<string>(
+                Some: v => v.Identity is null || v.Identity.Name is null ?  
+                    string.Empty : 
+                    v.Identity.Name,
+                None: () => string.Empty
+            );
+
+            var user = await _userManager.FindByNameAsync(username);
+
+            if (user == null || user.RefreshToken != refreshToken || user.RefreshTokenExpiryTime <= DateTime.Now)
+                return Left(new Error("Invalid access token or refresh token"));
+
+            var claims = principal.Match<List<Claim>>(
+                Some: v => v.Claims is null ?
+                    new List<Claim>() :
+                    v.Claims.ToList(),
+                None: () => new List<Claim>()
+            );
+
+            var newAccessToken = CreateToken(claims);
+            user.RefreshToken = GenerateRefreshToken();
+            
+            await _userManager.UpdateAsync(user);
+
+            return new TokenModel(
+                AccessToken: new JwtSecurityTokenHandler().WriteToken(newAccessToken),
+                RefreshToken: user.RefreshToken,
+                Expiration: newAccessToken.ValidTo
+            );
         }
-        string? username = principal?.Identity?.Name;
-
-        var user = await _userManager.FindByNameAsync(username);
-
-        if (user == null || user.RefreshToken != refreshToken || user.RefreshTokenExpiryTime <= DateTime.Now) {
-            return Left(new Error("Invalid access token or refresh token"));
+        catch (Exception ex) {
+            return Left(new Error(ex.Message));
         }
-
-        var newAccessToken = CreateToken(principal.Claims.ToList());
-        var newRefreshToken = GenerateRefreshToken();
-
-        user.RefreshToken = newRefreshToken;
-        await _userManager.UpdateAsync(user);
-
-        return new TokenModel(
-            AccessToken: new JwtSecurityTokenHandler().WriteToken(newAccessToken),
-            RefreshToken: newRefreshToken,
-            Expiration: newAccessToken.ValidTo
-        );
     }
 
-    private ClaimsPrincipal? GetPrincipalFromExpiredToken(string? token) {
+    private Option<ClaimsPrincipal> GetPrincipalFromExpiredToken(string? token) {
         var tokenValidationParameters = new TokenValidationParameters {
             ValidateAudience = false,
             ValidateIssuer = false,
@@ -139,9 +164,9 @@ public class AuthenticationService {
 
         var tokenHandler = new JwtSecurityTokenHandler();
         var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
-        if (securityToken is not JwtSecurityToken jwtSecurityToken ||
+        if (principal is null || securityToken is not JwtSecurityToken jwtSecurityToken ||
             !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
-            throw new SecurityTokenException("Invalid token");
+            return None;
 
         return principal;
     }
