@@ -1,7 +1,9 @@
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SportMeetingsApi.Authentication.Models;
 using SportMeetingsApi.Authentication.Services;
+using SportMeetingsApi.Authentication.Settings;
 
 namespace SportMeetingsApi.Authentication;
 
@@ -37,4 +39,8 @@ public class AuthenticationController : ControllerBase {
             Left: l => Unauthorized(l),
             Right: r => Ok(r)
         );
+
+    [Authorize(Roles = UserRole.Admin)]
+    [HttpGet("test")]
+    public async Task<ActionResult> Test() => Ok(await _authenticationService.Test());
 }

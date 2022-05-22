@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,6 +19,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using SportMeetingsApi.Persistence;
 using SportMeetingsApi.Persistence.Database;
+using SportMeetingsApi.Shared;
 using SportMeetingsApi.Shared.Settings;
 
 namespace SportMeetingsApi {
@@ -48,6 +50,7 @@ namespace SportMeetingsApi {
                 .AddDefaultTokenProviders();
 
             services.RegisterAuthenticationComponents(Configuration.GetSection(nameof(JwtSettings)).Get<JwtSettings>());
+            services.RegisterSharedComponents();
 
             services.AddControllers();
             services.AddSwaggerGen(c => {

@@ -17,6 +17,7 @@ using SportMeetingsApi.Shared.Settings;
 using System.Linq;
 using Microsoft.Extensions.Options;
 using SportMeetingsApi.Authentication.Settings;
+using SportMeetingsApi.Shared.Services;
 
 namespace SportMeetingsApi.Authentication.Services;
 
@@ -25,11 +26,14 @@ public class AuthenticationService {
     private readonly RoleManager<IdentityRole> _roleManager;
     private readonly JwtSettings _jwtSettings;
 
+    private readonly IContext _context;
+
     public AuthenticationService(
-        UserManager<User> userManager, RoleManager<IdentityRole> roleManager, IOptions<JwtSettings> jwtSettings) {
+        UserManager<User> userManager, RoleManager<IdentityRole> roleManager, IOptions<JwtSettings> jwtSettings, IContext context) {
         _userManager = userManager;
         _roleManager = roleManager;
         _jwtSettings = jwtSettings.Value;
+        _context = context;
     }
 
     public async Task<Either<Error, TokenModel>> Login(Login model) {
@@ -40,6 +44,7 @@ public class AuthenticationService {
                 return Left(new Error("Incorrect email or password"));
 
             var authClaims = new List<Claim> {
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
                 new Claim(ClaimTypes.Name, user.UserName),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             };
@@ -80,7 +85,7 @@ public class AuthenticationService {
         var token = new JwtSecurityToken(
             issuer: _jwtSettings.ValidIssuer,
             audience: _jwtSettings.ValidAudience,
-            expires: DateTime.Now.AddMinutes(_jwtSettings.TokenValidityInMinutes),
+            expires: DateTime.UtcNow.AddMinutes(_jwtSettings.TokenValidityInMinutes),
             claims: authClaims,
             signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
         );
@@ -102,13 +107,17 @@ public class AuthenticationService {
             if (!result.Succeeded)
                 return Left(new Error("User creation failed! Please check user details and try again."));
 
+            if (await _roleManager.RoleExistsAsync(UserRole.User)) {
+                await _userManager.AddToRoleAsync(user, UserRole.User);
+            }
+
             return new RegisterResponse(Message: "User created successfully!");
         }
         catch (Exception ex) {
             return Left(new Error(ex.Message));
         }
     }
-    
+
     public async Task<Either<Error, TokenModel>> RefreshToken(RefreshTokenModel refreshTokenModel) {
         try {
             string accessToken = refreshTokenModel.AccessToken;
@@ -119,8 +128,8 @@ public class AuthenticationService {
                 return Left(new Error("Invalid access token or refresh token"));
 
             string username = principal.Match<string>(
-                Some: v => v.Identity is null || v.Identity.Name is null ?  
-                    string.Empty : 
+                Some: v => v.Identity is null || v.Identity.Name is null ?
+                    string.Empty :
                     v.Identity.Name,
                 None: () => string.Empty
             );
@@ -139,7 +148,7 @@ public class AuthenticationService {
 
             var newAccessToken = CreateToken(claims);
             user.RefreshToken = GenerateRefreshToken();
-            
+
             await _userManager.UpdateAsync(user);
 
             return new TokenModel(
@@ -169,5 +178,11 @@ public class AuthenticationService {
             return None;
 
         return principal;
+    }
+
+    public async Task<string> Test() {
+        var user = await _userManager.FindByIdAsync(_context.UserId);
+        var roles = await _userManager.GetRolesAsync(user);
+        return _context.UserId + ": " + (roles is null ? string.Empty : string.Join(", ", roles));
     }
 }
