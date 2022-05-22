@@ -21,6 +21,7 @@ using SportMeetingsApi.Persistence;
 using SportMeetingsApi.Persistence.Database;
 using SportMeetingsApi.Shared;
 using SportMeetingsApi.Shared.Settings;
+using SportMeetingsApi.SportEvents;
 
 namespace SportMeetingsApi {
     public class Startup {
@@ -51,6 +52,7 @@ namespace SportMeetingsApi {
 
             services.RegisterAuthenticationComponents(Configuration.GetSection(nameof(JwtSettings)).Get<JwtSettings>());
             services.RegisterSharedComponents();
+            services.RegisterSportEventsComponents();
 
             services.AddControllers();
             services.AddSwaggerGen(c => {

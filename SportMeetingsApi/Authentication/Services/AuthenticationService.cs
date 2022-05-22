@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using LanguageExt;
 using static LanguageExt.Prelude;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using SportMeetingsApi.Authentication.Models;
 using SportMeetingsApi.Persistence;
