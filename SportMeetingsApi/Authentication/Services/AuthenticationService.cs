@@ -40,7 +40,7 @@ public class AuthenticationService {
         try {
             var user = await _userManager.FindByNameAsync(model.Username);
 
-            if (user == null || !await _userManager.CheckPasswordAsync(user, model.Password))
+            if (user == null || user.IsDeleted || !await _userManager.CheckPasswordAsync(user, model.Password))
                 return Left(new Error("Incorrect email or password"));
 
             var authClaims = new List<Claim> {
@@ -101,7 +101,8 @@ public class AuthenticationService {
             User user = new() {
                 Email = model.Email,
                 SecurityStamp = Guid.NewGuid().ToString(),
-                UserName = model.Username
+                UserName = model.Username,
+                IsDeleted = false
             };
             var result = await _userManager.CreateAsync(user, model.Password);
             if (!result.Succeeded)
@@ -128,7 +129,7 @@ public class AuthenticationService {
                 return Left(new Error("Invalid access token or refresh token"));
 
             string username = principal.Match<string>(
-                Some: v => v.Identity is null || v.Identity.Name is null ?
+                Some: v => v.Identity?.Name is null ?
                     string.Empty :
                     v.Identity.Name,
                 None: () => string.Empty
@@ -136,7 +137,8 @@ public class AuthenticationService {
 
             var user = await _userManager.FindByNameAsync(username);
 
-            if (user == null || user.RefreshToken != refreshToken || user.RefreshTokenExpiryTime <= DateTime.Now)
+            if (user == null || user.IsDeleted || user.RefreshToken != refreshToken ||
+                user.RefreshTokenExpiryTime <= DateTime.Now)
                 return Left(new Error("Invalid access token or refresh token"));
 
             var claims = principal.Match<List<Claim>>(
