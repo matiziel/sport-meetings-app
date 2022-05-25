@@ -32,9 +32,6 @@ public class DatabaseContext : IdentityDbContext<User> {
 
         modelBuilder.Entity<Location>().HasKey(l => l.Id);
         modelBuilder.Entity<Location>().Property(l => l.Name).IsRequired();
-        modelBuilder.Entity<Location>().Property(l => l.Street).IsRequired();
-        modelBuilder.Entity<Location>().Property(l => l.ZipCode).IsRequired();
-        modelBuilder.Entity<Location>().Property(l => l.City).IsRequired();
 
         modelBuilder.Entity<SignUp>().HasKey(s => s.Id);
 
