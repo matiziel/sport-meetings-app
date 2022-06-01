@@ -17,6 +17,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using SportMeetingsApi.Middlewares;
 using SportMeetingsApi.Persistence;
 using SportMeetingsApi.Persistence.Database;
 using SportMeetingsApi.Shared;
@@ -38,6 +39,7 @@ namespace SportMeetingsApi {
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services) {
 
+
             services.AddOptions();
             services.Configure<JwtSettings>(Configuration.GetSection("JwtSettings"));
 
@@ -54,6 +56,10 @@ namespace SportMeetingsApi {
             services.RegisterSharedComponents();
             services.RegisterSportEventsComponents();
 
+            services.AddCors(p => p.AddPolicy("MyPolicy", builder => {
+                builder.WithOrigins("*").AllowAnyMethod().AllowAnyHeader();
+            }));
+
             services.AddControllers();
             services.AddSwaggerGen(c => {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "SportMeetingsApi", Version = "v1" });
@@ -67,14 +73,15 @@ namespace SportMeetingsApi {
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "SportMeetingsApi v1"));
             }
-
-            app.UseHttpsRedirection();
-
+            // app.UseHttpsRedirection();
             app.UseRouting();
+
+            app.UseCors("MyPolicy");
 
             app.UseAuthentication();
             app.UseAuthorization();
 
+            app.UseOptions();
             app.UseEndpoints(endpoints => {
                 endpoints.MapControllers();
             });
