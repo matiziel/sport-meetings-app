@@ -31,21 +31,24 @@ public class SportEventsQueryService {
             .Select(e => new SportEventGet(e.Id, e.Name))
             .ToListAsync();
 
-    public async Task<IEnumerable<SportEventGet>> GetEventsOwnedByUser() =>
-        await _dbContext.SportEvents
+    public async Task<IEnumerable<SportEventGet>> GetEventsOwnedByUser() {
+        var result = await _dbContext.SportEvents
             .AsNoTracking()
             .Where(e => !e.IsDeleted && e.StartDate > DateTime.Now && e.Owner.Id == _context.UserId)
             .Select(e => new SportEventGet(e.Id, e.Name))
             .ToListAsync();
+        return result;
+    }
 
-    public async Task<IEnumerable<SportEventGet>> GetEventsWhichUserAttend() =>
-        await _dbContext.SignUps
+    public async Task<IEnumerable<SportEventGet>> GetEventsWhichUserAttend() {
+        var result = await _dbContext.SignUps
             .AsNoTracking()
             .Include(s => s.SportEvent)
             .Where(s => s.User.Id == _context.UserId)
             .Select(s => new SportEventGet(s.SportEvent.Id, s.SportEvent.Name))
             .ToListAsync();
-
+        return result;
+    }
 
     public async Task<SportEventInfo> GetEvent(int sportEventId) {
         var numberOfSignUps = await _dbContext.SignUps.CountAsync(s => s.SportEvent.Id == sportEventId);

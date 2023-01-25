@@ -37,6 +37,18 @@ public class SportEventsController : ControllerBase {
     public async Task<ActionResult<SportEventInfo>> GetEvent(int sportEventId) {
         return Ok(await _sportEventsQueryService.GetEvent(sportEventId));
     }
+    
+    [HttpGet("OwnedByUser")]
+    [Authorize(Roles = UserRole.User)]
+    public async Task<ActionResult<SportEventInfo>> GetEventsOwnedByUser() {
+        return Ok(await _sportEventsQueryService.GetEventsOwnedByUser());
+    }
+    
+    [HttpGet("WhichUserAttend")]
+    [Authorize(Roles = UserRole.User)]
+    public async Task<ActionResult<SportEventInfo>> GetEventsWhichUserAttend() {
+        return Ok(await _sportEventsQueryService.GetEventsWhichUserAttend());
+    }
 
     [HttpPost]
     [Authorize(Roles = UserRole.User)]
