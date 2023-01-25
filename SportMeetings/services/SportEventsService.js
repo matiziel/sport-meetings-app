@@ -6,7 +6,6 @@ const SportEventsService = {
     getSportEvents: async () => {
         try {
             var result = await ApiClient.get('SportEvents', await AuthService.getAuthHeader());
-            console.log(result.data);
             return result.data;
         }
         catch (error) {
@@ -24,7 +23,7 @@ const SportEventsService = {
         }
     },
 
-    IsUserEventOwner: async (sportEventId) => {
+    isUserEventOwner: async (sportEventId) => {
         try {
             var result = await ApiClient.get('SportEvents/IsUserEventOwner/' + sportEventId, await AuthService.getAuthHeader());
             return result.data;
@@ -41,6 +40,7 @@ const SportEventsService = {
         }
         catch (error) {
             console.log(error);
+            return null;
         }
     },
 
@@ -51,6 +51,7 @@ const SportEventsService = {
         }
         catch (error) {
             console.log(error);
+            return null;
         }
     }
 

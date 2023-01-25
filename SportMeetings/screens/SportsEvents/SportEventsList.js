@@ -10,6 +10,7 @@ function SportEventsListScreen({ navigation }) {
 
     useEffect(() => {
         const fetchData = async () => {
+            console.log("sportlist");
             const result = await SportEventsService.getSportEvents();
             setSportEvents(result);
         };

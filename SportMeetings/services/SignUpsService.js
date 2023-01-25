@@ -10,6 +10,7 @@ const SignUpsService = {
         }
         catch (error) {
             console.log(error);
+            return false;
         }
     },
 

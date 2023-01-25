@@ -24,7 +24,7 @@ function SportEventInfoScreen({ route, navigation }) {
             const isSignedUp = await SignUpsService.isUserSignedUpForEvent(sportEventId);
             setSignedUp(isSignedUp);
 
-            const isOwner = await SportEventsService.IsUserEventOwner(sportEventId);
+            const isOwner = await SportEventsService.isUserEventOwner(sportEventId);
             setIsEventOwner(isOwner);
         };
         fetchData();

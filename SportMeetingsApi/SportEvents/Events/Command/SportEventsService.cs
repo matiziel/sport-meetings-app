@@ -18,8 +18,8 @@ public class SportEventsService {
         _context = context;
     }
 
-    public async Task CreateSportEvent(SportEventCreate sportEventCreate) {
-        var user = await _dbContext.Users.SingleOrDefaultAsync(u => u.Id == _context.UserId) ?? throw new InvalidOperationException();
+    public async Task<int> CreateSportEvent(SportEventCreate sportEventCreate) {
+        var user = await _dbContext.Users.SingleAsync(u => u.Id == _context.UserId);
         var sportEvent = new SportEvent() {
             Owner = user,
             Name = sportEventCreate.Name,
@@ -32,5 +32,21 @@ public class SportEventsService {
         };
         await _dbContext.SportEvents.AddAsync(sportEvent);
         await _dbContext.SaveChangesAsync();
+
+        return sportEvent.Id;
+    }
+
+    public async Task<int> UpdateSportEvent(SportEventUpdate sportEventUpdate) {
+        var sportEvent = await _dbContext.SportEvents.SingleAsync(s => s.Id == sportEventUpdate.Id);
+
+        sportEvent.Description = sportEventUpdate.Description;
+        sportEvent.StartDate = sportEventUpdate.StartDate;
+        sportEvent.DurationInHours = sportEventUpdate.DurationInHours;
+        sportEvent.Location = sportEventUpdate.Location;
+        
+        _dbContext.SportEvents.Update(sportEvent);
+        await _dbContext.SaveChangesAsync();
+
+        return sportEvent.Id;
     }
 }
