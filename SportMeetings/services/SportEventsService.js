@@ -13,9 +13,19 @@ const SportEventsService = {
         }
     },
 
-    getUserSportEvents: async () => {
+    getEventsOwnedByUser: async () => {
         try {
-            var result = await ApiClient.get('SportEvents', await AuthService.getAuthHeader());
+            var result = await ApiClient.get('SportEvents/OwnedByUser', await AuthService.getAuthHeader());
+            return result.data;
+        }
+        catch (error) {
+            console.log(error);
+        }
+    },
+
+    getEventsWhichUserAttend: async () => {
+        try {
+            var result = await ApiClient.get('SportEvents/WhichUserAttend', await AuthService.getAuthHeader());
             return result.data;
         }
         catch (error) {
