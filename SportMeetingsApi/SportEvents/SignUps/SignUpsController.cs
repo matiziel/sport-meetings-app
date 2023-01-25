@@ -2,10 +2,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SportMeetingsApi.Authentication.Settings;
-using SportMeetingsApi.SportEvents.Events.Command;
-using SportMeetingsApi.SportEvents.Events.Query;
 using SportMeetingsApi.SportEvents.SignUps.Command;
-using SportMeetingsApi.SportEvents.SignUps.Models;
 using SportMeetingsApi.SportEvents.SignUps.Query;
 
 namespace SportMeetingsApi.SportEvents.SignUps; 
@@ -25,7 +22,7 @@ public class SignUpsController : ControllerBase {
 
     [HttpGet("IsUserSignUp/{sportEventId:int}")]
     [Authorize(Roles = UserRole.User)]
-    public async Task<ActionResult<IsUserSignUp>> IsUserSignUp(int sportEventId) {
+    public async Task<ActionResult<bool>> IsUserSignUp(int sportEventId) {
         return Ok(await _signUpsQueryService.IsUserSignUp(sportEventId));
     }
     

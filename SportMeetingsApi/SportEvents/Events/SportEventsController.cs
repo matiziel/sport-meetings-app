@@ -21,19 +21,17 @@ public class SportEventsController : ControllerBase {
         _sportEventsQueryService = sportEventsQueryService;
         _sportEventsService = sportEventsService;
     }
-
-    [HttpGet("user")]
-    [Authorize(Roles = UserRole.User)]
-    public async Task<ActionResult<IEnumerable<SportEventGet>>> GetEventsForUser() {
-        return Ok(await _sportEventsQueryService.GetEventsCreatedByUser());
-    }
-
+    
     [HttpGet]
     [Authorize(Roles = UserRole.User)]
-    public async Task<ActionResult<IEnumerable<SportEventGet>>> GetEvents() {
-        return Ok(await _sportEventsQueryService.GetEvents());
-    }
-
+    public async Task<ActionResult<IEnumerable<SportEventGet>>> GetEvents() =>
+        Ok(await _sportEventsQueryService.GetEvents());
+    
+    [HttpGet("IsUserEventOwner/{sportEventId:int}")]
+    [Authorize(Roles = UserRole.User)]
+    public async Task<ActionResult<bool>> IsUserEventOwner(int sportEventId) =>
+        Ok(await _sportEventsQueryService.IsUserOwnerOfEvent(sportEventId));
+    
     [HttpGet("{sportEventId:int}")]
     [Authorize(Roles = UserRole.User)]
     public async Task<ActionResult<SportEventInfo>> GetEvent(int sportEventId) {

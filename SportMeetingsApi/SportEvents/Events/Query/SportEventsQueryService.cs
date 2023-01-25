@@ -19,13 +19,9 @@ public class SportEventsQueryService {
         _context = context;
     }
 
-    public async Task<IEnumerable<SportEventGet>> GetEventsCreatedByUser() {
-        return await _dbContext.SportEvents
-            .AsNoTracking()
-            .Where(e => !e.IsDeleted && e.Owner.Id == _context.UserId)
-            .Select(e => new SportEventGet(e.Id, e.Name))
-            .ToListAsync();
-    }
+    public async Task<bool> IsUserOwnerOfEvent(int sportEventId) =>
+        await _dbContext.SportEvents
+            .AnyAsync(s => s.Id == sportEventId && s.Owner.Id == _context.UserId);
 
     public async Task<IEnumerable<SportEventGet>> GetEvents() =>
         await _dbContext.SportEvents

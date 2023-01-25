@@ -10,6 +10,8 @@ import Moment from 'moment';
 function SportEventInfoScreen({ route, navigation }) {
     const [sportEvent, setSportEvent] = useState({ id: null });
     const [signedUp, setSignedUp] = useState(false);
+    const [isEventOwner, setIsEventOwner] = useState(false);
+
     Moment.locale('pl');
 
 
@@ -20,10 +22,10 @@ function SportEventInfoScreen({ route, navigation }) {
             setSportEvent(result);
 
             const isSignedUp = await SignUpsService.isUserSignedUpForEvent(sportEventId);
-            console.log(isSignedUp.value);
-            console.log(result);
+            setSignedUp(isSignedUp);
 
-            setSignedUp(isSignedUp.value);
+            const isOwner = await SportEventsService.IsUserEventOwner(sportEventId);
+            setIsEventOwner(isOwner);
         };
         fetchData();
     }, [sportEvent.id, signedUp]);
@@ -38,17 +40,20 @@ function SportEventInfoScreen({ route, navigation }) {
         setSignedUp(false);
     }
 
+    const onUpdateEvent = async (eventId) => {
+    }
+
     return (
         <View style={Styles.eventInfoStyle}>
+            {isEventOwner && <Button title="Edit event" onPress={async () => await onUpdateEvent(sportEvent.id)}> </Button>}
             {sportEvent && <Text style={Styles.eventInfoTextStyle}>Name: {sportEvent.name}</Text>}
             {sportEvent && <Text style={Styles.eventInfoTextStyle}>Description: {sportEvent.description}</Text>}
             {sportEvent && <Text style={Styles.eventInfoTextStyle}>Number of free spaces: {sportEvent.numberOfFreeSpaces} / {sportEvent.limitOfParticipants}</Text>}
             {sportEvent && <Text style={Styles.eventInfoTextStyle}>Start date: {Moment(sportEvent.startDate).format("DD.MM.YYYY hh:mm")}</Text>}
             {sportEvent && <Text style={Styles.eventInfoTextStyle}>Duration: {sportEvent.durationInHours} h</Text>}
             {sportEvent && <Text style={Styles.eventInfoTextStyle}>Location: {sportEvent.location}</Text>}
-            {!signedUp && <Button title="Sign up from event" onPress={async () => await onSignUp(sportEvent.id)}> </Button>}
+            {(!signedUp && sportEvent.numberOfFreeSpaces > 0) && <Button title="Sign up for event" onPress={async () => await onSignUp(sportEvent.id)}> </Button>}
             {signedUp && <Button title="Sign out from event" onPress={async () => await onSignOut(sportEvent.id)}> </Button>}
-
         </View>);
 }
 
