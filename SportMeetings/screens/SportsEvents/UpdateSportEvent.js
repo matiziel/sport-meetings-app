@@ -4,22 +4,17 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useState, useContext, useEffect } from 'react';
 import SportEventsService from '../../services/SportEventsService.js';
 
-function UpdateSportEventScreen({ navigation }) {
+function UpdateSportEventScreen({ route, navigation }) {
     const [id, setId] = useState(null);
     const [description, setDescription] = useState('');
-    const [startDate, setStartDate] = useState(new Date());
-    const [durationInHours, setDurationInHours] = useState('');
     const [location, setLocation] = useState('');
 
     useEffect(() => {
         const fetchData = async () => {
             const { sportEventId } = route.params;
             const result = await SportEventsService.getSportEvent(sportEventId);
-
             setId(result.id);
             setDescription(result.id);
-            setStartDate(result.startDate);
-            setDurationInHours(result.durationInHours);
             setLocation(result.location);
         };
         fetchData();
@@ -27,16 +22,9 @@ function UpdateSportEventScreen({ navigation }) {
 
     const updateSportEvent = async (sportEvent) => {
         await SportEventsService.updateSportEvent(sportEvent);
-        navigation.navigate('SportEventsList');
+        navigation.navigate('SportEventsList', { updateListView: true });
     }
 
-    const onStartDateChange = (event, selectedDate) => {
-        if (event?.type === 'dismissed') {
-            setStartDate(startDate);
-            return;
-        }
-        setStartDate(selectedDate);
-    };
 
     return (
         <ScrollView>
@@ -52,27 +40,14 @@ function UpdateSportEventScreen({ navigation }) {
                 <View style={Styles.inputView}>
                     <TextInput
                         style={Styles.TextInput}
-                        placeholder="Duration in hours"
-                        keyboardType='numeric'
-                        onChangeText={setDurationInHours}
-                        value={durationInHours}
-                        maxLength={1}
-                    />
-                </View>
-                <View style={Styles.inputView}>
-                    <TextInput
-                        style={Styles.TextInput}
                         placeholder="Location"
                         value={location}
                         onChangeText={setLocation}
                     />
                 </View>
-                <View>
-                    <DateTimePicker mode="datetime" value={startDate} onChange={onStartDateChange} />
-                </View>
 
                 <Button title="Update" onPress={() =>
-                    updateSportEvent({ description, startDate, durationInHours, location })
+                    updateSportEvent({ id, description, location })
                 } />
 
             </View>

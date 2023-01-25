@@ -4,7 +4,6 @@ import AuthContext from '../../context/AuthContext.js'
 import TestService from '../../services/TestService.js';
 
 function UserScreen() {
-    const [value, setValue] = useState('');
     const { signOut } = useContext(AuthContext);
 
     useEffect(() => {
@@ -17,9 +16,9 @@ function UserScreen() {
 
     return (
         <View>
-            <Text>Signed in!</Text>
-            <Text>{value}</Text>
             <Button title="Sign out" onPress={signOut} />
+
+            
         </View>
     );
 }

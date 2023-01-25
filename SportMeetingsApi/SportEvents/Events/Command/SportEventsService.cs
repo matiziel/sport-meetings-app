@@ -40,8 +40,6 @@ public class SportEventsService {
         var sportEvent = await _dbContext.SportEvents.SingleAsync(s => s.Id == sportEventUpdate.Id);
 
         sportEvent.Description = sportEventUpdate.Description;
-        sportEvent.StartDate = sportEventUpdate.StartDate;
-        sportEvent.DurationInHours = sportEventUpdate.DurationInHours;
         sportEvent.Location = sportEventUpdate.Location;
         
         _dbContext.SportEvents.Update(sportEvent);

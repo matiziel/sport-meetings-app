@@ -13,6 +13,16 @@ const SportEventsService = {
         }
     },
 
+    getUserSportEvents: async () => {
+        try {
+            var result = await ApiClient.get('SportEvents', await AuthService.getAuthHeader());
+            return result.data;
+        }
+        catch (error) {
+            console.log(error);
+        }
+    },
+
     getSportEvent: async (sportEventId) => {
         try {
             var result = await ApiClient.get('SportEvents/' + sportEventId, await AuthService.getAuthHeader());
@@ -46,7 +56,7 @@ const SportEventsService = {
 
     updateSportEvent: async (sportEvent) => {
         try {
-            var result = await ApiClient.put('SportEvents', sportEvent, await AuthService.getAuthHeader());
+            var result = await ApiClient.put('SportEvents/' + sportEvent.id, sportEvent, await AuthService.getAuthHeader());
             return result.data;
         }
         catch (error) {

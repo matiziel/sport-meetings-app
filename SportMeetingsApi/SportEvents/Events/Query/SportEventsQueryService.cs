@@ -14,6 +14,7 @@ namespace SportMeetingsApi.SportEvents.Events.Query;
 public class SportEventsQueryService {
     private readonly DatabaseContext _dbContext;
     private readonly IContext _context;
+
     public SportEventsQueryService(DatabaseContext dbContext, IContext context) {
         _dbContext = dbContext;
         _context = context;
@@ -30,6 +31,22 @@ public class SportEventsQueryService {
             .Select(e => new SportEventGet(e.Id, e.Name))
             .ToListAsync();
 
+    public async Task<IEnumerable<SportEventGet>> GetEventsOwnedByUser() =>
+        await _dbContext.SportEvents
+            .AsNoTracking()
+            .Where(e => !e.IsDeleted && e.StartDate > DateTime.Now && e.Owner.Id == _context.UserId)
+            .Select(e => new SportEventGet(e.Id, e.Name))
+            .ToListAsync();
+
+    public async Task<IEnumerable<SportEventGet>> GetEventsWhichUserAttend() =>
+        await _dbContext.SignUps
+            .AsNoTracking()
+            .Include(s => s.SportEvent)
+            .Where(s => s.User.Id == _context.UserId)
+            .Select(s => new SportEventGet(s.SportEvent.Id, s.SportEvent.Name))
+            .ToListAsync();
+
+
     public async Task<SportEventInfo> GetEvent(int sportEventId) {
         var numberOfSignUps = await _dbContext.SignUps.CountAsync(s => s.SportEvent.Id == sportEventId);
         var sportEvent = await _dbContext.SportEvents
@@ -37,16 +54,14 @@ public class SportEventsQueryService {
             .SingleAsync(s => s.Id == sportEventId);
 
         return new SportEventInfo(
-            sportEvent.Id, 
-            sportEvent.Name, 
+            sportEvent.Id,
+            sportEvent.Name,
             sportEvent.Description,
-            sportEvent.LimitOfParticipants, 
-            sportEvent.LimitOfParticipants - numberOfSignUps, 
-            sportEvent.StartDate, 
+            sportEvent.LimitOfParticipants,
+            sportEvent.LimitOfParticipants - numberOfSignUps,
+            sportEvent.StartDate,
             sportEvent.DurationInHours,
             sportEvent.Location
         );
     }
-    
-
 }

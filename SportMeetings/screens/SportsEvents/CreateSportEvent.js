@@ -12,17 +12,18 @@ function CreateSportEventScreen({ navigation }) {
     const [durationInHours, setDurationInHours] = useState('');
     const [location, setLocation] = useState('');
 
-    const createSportEvent = async (sportEvent) => {
-        await SportEventsService.createSportEvent(sportEvent);
-        navigation.navigate('SportEventsList');
-    }
-
     const onStartDateChange = (event, selectedDate) => {
         if (event?.type === 'dismissed') {
             setStartDate(startDate);
             return;
         }
         setStartDate(selectedDate);
+    };
+
+    const createSportEvent = async (sportEvent) => {
+        await SportEventsService.createSportEvent(sportEvent);
+        navigation.navigate('SportEventsList', { updateListView: true });
+        
     };
 
     return (

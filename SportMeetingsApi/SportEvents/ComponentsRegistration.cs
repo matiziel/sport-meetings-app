@@ -3,6 +3,7 @@ using SportMeetingsApi.SportEvents.Events.Command;
 using SportMeetingsApi.SportEvents.Events.Query;
 using SportMeetingsApi.SportEvents.SignUps.Command;
 using SportMeetingsApi.SportEvents.SignUps.Query;
+using SportMeetingsApi.SportEvents.Users.Query;
 
 namespace SportMeetingsApi.SportEvents;
 
@@ -12,6 +13,6 @@ public static class ComponentsRegistration {
         serviceCollection.AddScoped<SignUpsService>();
         serviceCollection.AddScoped<SportEventsQueryService>();
         serviceCollection.AddScoped<SportEventsService>();
-
+        serviceCollection.AddScoped<UsersQueryService>();
     }
 }

@@ -40,12 +40,9 @@ function SportEventInfoScreen({ route, navigation }) {
         setSignedUp(false);
     }
 
-    const onUpdateEvent = async (eventId) => {
-    }
-
     return (
         <View style={Styles.eventInfoStyle}>
-            {isEventOwner && <Button title="Edit event" onPress={async () => await onUpdateEvent(sportEvent.id)}> </Button>}
+            {isEventOwner && <Button title="Edit event" onPress={async () => navigation.navigate('UpdateSportEvent', { sportEventId: sportEvent.id })}> </Button>}
             {sportEvent && <Text style={Styles.eventInfoTextStyle}>Name: {sportEvent.name}</Text>}
             {sportEvent && <Text style={Styles.eventInfoTextStyle}>Description: {sportEvent.description}</Text>}
             {sportEvent && <Text style={Styles.eventInfoTextStyle}>Number of free spaces: {sportEvent.numberOfFreeSpaces} / {sportEvent.limitOfParticipants}</Text>}
