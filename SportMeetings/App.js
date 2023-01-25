@@ -3,7 +3,7 @@ import { Button, Text, TextInput, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import AuthScreen from './screens/Authentication/Auth.js';
-
+import { useMemo, useReducer, useEffect } from 'react';
 
 import AuthContext from './context/AuthContext.js';
 import AuthService from './services/AuthService.js';
@@ -20,7 +20,7 @@ function SplashScreen() {
 const Stack = createStackNavigator();
 
 export default function App({ navigation }) {
-  const [state, dispatch] = React.useReducer(
+  const [state, dispatch] = useReducer(
     (prevState, action) => {
       switch (action.type) {
         case 'RESTORE_TOKEN':
@@ -50,7 +50,7 @@ export default function App({ navigation }) {
     }
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     // Fetch the token from storage then navigate to our appropriate place
     const bootstrapAsync = async () => {
       let userToken;
@@ -72,7 +72,7 @@ export default function App({ navigation }) {
     bootstrapAsync();
   }, []);
 
-  const authContext = React.useMemo(
+  const authContext = useMemo(
     () => ({
       signIn: async (data) => {
         await AuthService.signIn(data.username, data.password);

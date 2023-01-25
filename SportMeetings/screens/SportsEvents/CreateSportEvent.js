@@ -1,19 +1,18 @@
-import { useState, useContext, useEffect } from 'react';
-import { Button, Text, TextInput, View } from 'react-native';
-import AuthContext from '../../context/AuthContext.js';
+import { Button, TextInput, View } from 'react-native';
 import Styles from '../../styles/Styles.js';
+import DatePicker from 'react-native-date-picker';
+import { useState, useContext, useEffect } from 'react';
 
 function CreateSportEventScreen({ navigation }) {
-    const [name, setName] = React.useState('');
-    const [description, setDescription] = React.useState('');
-    const [limitOfParticipants, setLimitOfParticipants] = React.useState('');
-    const [startDate, setStartDate] = React.useState('');
-    const [durationInHours, setDurationInHours] = React.useState('');
-    const [location, setLocation] = React.useState('');
+    const [name, setName] = useState('');
+    const [description, setDescription] = useState('');
+    const [limitOfParticipants, setLimitOfParticipants] = useState('');
+    const [startDate, setStartDate] = useState(new Date());
+    const [durationInHours, setDurationInHours] = useState('');
+    const [location, setLocation] = useState('');
 
     const createSportEvent = async (sportEvent) => {
-        await SignUpsService.signUpForEvent(eventId);
-        setSignedUp(true);
+        console.log(sportEvent);
     }
 
     return (
@@ -22,17 +21,45 @@ function CreateSportEventScreen({ navigation }) {
                 <TextInput
                     style={Styles.TextInput}
                     placeholder="Name"
-                    value={username}
-                    onChangeText={setUsername}
+                    value={name}
+                    onChangeText={setName}
                 />
             </View>
             <View style={Styles.inputView}>
                 <TextInput
                     style={Styles.TextInput}
-                    placeholder="Password"
-                    value={password}
-                    onChangeText={setPassword}
-                    secureTextEntry={true}
+                    placeholder="Description"
+                    value={description}
+                    onChangeText={setDescription}
+                />
+            </View>
+            <View style={Styles.inputView}>
+                <TextInput
+                    style={Styles.inputView}
+                    placeholder="Limit of participants"
+                    keyboardType='numeric'
+                    onChangeText={setLimitOfParticipants}
+                    value={limitOfParticipants}
+                    maxLength={3}
+                />
+            </View>
+            <DatePicker date={startDate} onDateChange={setStartDate} />
+            <View style={Styles.inputView}>
+                <TextInput
+                    style={Styles.inputView}
+                    placeholder="Duration in hours"
+                    keyboardType='numeric'
+                    onChangeText={setDurationInHours}
+                    value={durationInHours}
+                    maxLength={1}
+                />
+            </View>
+            <View style={Styles.inputView}>
+                <TextInput
+                    style={Styles.TextInput}
+                    placeholder="Location"
+                    value={location}
+                    onChangeText={setLocation}
                 />
             </View>
 

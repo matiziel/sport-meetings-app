@@ -8,14 +8,15 @@ import {
 
 import AuthContext from '../../context/AuthContext.js';
 import Styles from '../../styles/Styles.js';
+import { useState, useContext } from 'react';
 
 
 
 function SignInScreen({ navigation }) {
-    const [username, setUsername] = React.useState('');
-    const [password, setPassword] = React.useState('');
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
 
-    const { signIn } = React.useContext(AuthContext);
+    const { signIn } = useContext(AuthContext);
 
 
     return (

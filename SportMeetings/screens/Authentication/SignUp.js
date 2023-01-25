@@ -8,14 +8,15 @@ import {
 
 import AuthContext from '../../context/AuthContext.js';
 import Styles from '../../styles/Styles.js';
+import { useState, useContext } from 'react';
 
 
 function SignUpScreen({ navigation }) {
-    const [username, setUsername] = React.useState('');
-    const [email, setEmail] = React.useState('');
-    const [password, setPassword] = React.useState('');
+    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
 
-    const { signUp } = React.useContext(AuthContext);
+    const { signUp } = useContext(AuthContext);
 
 
     return (
