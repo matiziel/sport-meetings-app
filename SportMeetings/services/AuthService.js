@@ -7,7 +7,9 @@ import Token from "../Token.js";
 const AuthService = {
     getAuthHeader: async () => {
         const user = JSON.parse(await SecureStore.getItemAsync(Config.UserAuthDataKey));
-        return { Authorization: 'Bearer ' + user.accessToken };
+        return {
+            headers: { Authorization: 'Bearer ' + user.accessToken }
+        }
     },
     signIn: async (username, password) => {
         const response = await ApiClient.post(
@@ -16,14 +18,13 @@ const AuthService = {
                 Username: username,
                 Password: password
             });
+        await SecureStore.deleteItemAsync(Config.UserAuthDataKey);
         await SecureStore.setItemAsync(Config.UserAuthDataKey, JSON.stringify(response.data));
-        // Token.accessToken = response.data.accessToken;
     },
     signOut: async () => {
         await SecureStore.deleteItemAsync(Config.UserAuthDataKey);
-        // Token.accessToken = null;
     },
-    singUp: async (username, email, password) => {
+    signUp: async (username, email, password) => {
         await ApiClient.post(
             'authentication/register',
             {
@@ -41,7 +42,6 @@ const AuthService = {
                 RefreshToken: user.refreshToken
             });
         await SecureStore.setItemAsync(Config.UserAuthDataKey, JSON.stringify(response.data));
-        // Token.accessToken = response.data.accessToken;
     }
 };
 

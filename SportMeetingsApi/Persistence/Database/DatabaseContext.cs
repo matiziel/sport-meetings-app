@@ -15,23 +15,14 @@ public class DatabaseContext : IdentityDbContext<User> {
         modelBuilder.Entity<SportEvent>().HasKey(e => e.Id);
         modelBuilder.Entity<SportEvent>().Property(e => e.Name).IsRequired();
         modelBuilder.Entity<SportEvent>().Property(e => e.StartDate).IsRequired();
-        modelBuilder.Entity<SportEvent>().Property(e => e.EndDate).IsRequired();
+        modelBuilder.Entity<SportEvent>().Property(e => e.DurationInHours).IsRequired();
         modelBuilder.Entity<SportEvent>().Property(e => e.LimitOfParticipants).IsRequired();
 
         modelBuilder.Entity<SportEvent>()
-            .HasOne(a => a.User)
+            .HasOne(a => a.Owner)
             .WithMany(s => s.CreatedSportEvents)
             .IsRequired()
             .OnDelete(DeleteBehavior.NoAction);
-
-        modelBuilder.Entity<SportEvent>()
-            .HasOne(s => s.Location)
-            .WithMany(l => l.SportEvents)
-            .IsRequired()
-            .OnDelete(DeleteBehavior.NoAction);
-
-        modelBuilder.Entity<Location>().HasKey(l => l.Id);
-        modelBuilder.Entity<Location>().Property(l => l.Name).IsRequired();
 
         modelBuilder.Entity<SignUp>().HasKey(s => s.Id);
 
@@ -49,6 +40,5 @@ public class DatabaseContext : IdentityDbContext<User> {
     }
 
     public DbSet<SportEvent> SportEvents { get; set; }
-    public DbSet<Location> Locations { get; set; }
     public DbSet<SignUp> SignUps { get; set; }
 }

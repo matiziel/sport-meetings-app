@@ -19,28 +19,38 @@ public class SportEventsQueryService {
         _context = context;
     }
 
-    public async Task<IEnumerable<SportEventGet>> GetEventsCreatedByUser(Paging paging) {
+    public async Task<IEnumerable<SportEventGet>> GetEventsCreatedByUser() {
         return await _dbContext.SportEvents
             .AsNoTracking()
-            .Where(e => !e.IsDeleted && e.User.Id == _context.UserId)
-            .Skip(paging.Skip)
-            .Take(paging.Take)
+            .Where(e => !e.IsDeleted && e.Owner.Id == _context.UserId)
             .Select(e => new SportEventGet(e.Id, e.Name))
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<SportEventGet>> GetEvents(Paging paging) {
-        return await GetActualEvents()
-            .Skip(paging.Skip)
-            .Take(paging.Take)
-            .Select(e => new SportEventGet(e.Id, e.Name))
-            .ToListAsync();
-    }
-
-    private IQueryable<SportEvent> GetActualEvents() {
-        return _dbContext.SportEvents
+    public async Task<IEnumerable<SportEventGet>> GetEvents() =>
+        await _dbContext.SportEvents
             .AsNoTracking()
-            .Where(e => !e.IsDeleted && e.EndDate > DateTime.Now);
+            .Where(e => !e.IsDeleted && e.StartDate > DateTime.Now)
+            .Select(e => new SportEventGet(e.Id, e.Name))
+            .ToListAsync();
+
+    public async Task<SportEventInfo> GetEvent(int sportEventId) {
+        var numberOfSignUps = await _dbContext.SignUps.CountAsync(s => s.SportEvent.Id == sportEventId);
+        var sportEvent = await _dbContext.SportEvents
+            .AsNoTracking()
+            .SingleAsync(s => s.Id == sportEventId);
+
+        return new SportEventInfo(
+            sportEvent.Id, 
+            sportEvent.Name, 
+            sportEvent.Description,
+            sportEvent.LimitOfParticipants, 
+            sportEvent.LimitOfParticipants - numberOfSignUps, 
+            sportEvent.StartDate, 
+            sportEvent.DurationInHours,
+            sportEvent.Location
+        );
     }
+    
 
 }

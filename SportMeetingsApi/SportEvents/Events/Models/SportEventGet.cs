@@ -1,4 +1,8 @@
+using System;
+
 namespace SportMeetingsApi.SportEvents.Events.Models;
+
 public record SportEventGet(
-    int Id, string Name
+    int Id,
+    string Name
 );

@@ -2,10 +2,12 @@ import * as React from 'react';
 import { Button, Text, TextInput, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import HomeScreen from './screens/Home.js';
-import SignInScreen from './screens/SignIn.js';
+import AuthScreen from './screens/Authentication/Auth.js';
+
+
 import AuthContext from './context/AuthContext.js';
 import AuthService from './services/AuthService.js';
+import SportMeetings from './screens/SportMeetings.js';
 
 function SplashScreen() {
   return (
@@ -73,26 +75,19 @@ export default function App({ navigation }) {
   const authContext = React.useMemo(
     () => ({
       signIn: async (data) => {
-        // In a production app, we need to send some data (usually username, password) to server and get a token
-        // We will also need to handle errors if sign in failed
-        // After getting token, we need to persist the token using `SecureStore` or any other encrypted storage
-        // In the example, we'll use a dummy token
         await AuthService.signIn(data.username, data.password);
 
-        dispatch({ type: 'SIGN_IN', token: 'dummy-auth-token' });
+        dispatch({ type: 'SIGN_IN', token: 'token' });
       },
       signOut: async () => {
         await AuthService.signOut();
         dispatch({ type: 'SIGN_OUT' })
       },
       signUp: async (data) => {
-        // In a production app, we need to send user data to server and get a token
-        // We will also need to handle errors if sign up failed
-        // After getting token, we need to persist the token using `SecureStore` or any other encrypted storage
-        // In the example, we'll use a dummy token
         await AuthService.signUp(data.username, data.email, data.password);
+        await AuthService.signIn(data.username, data.password);
 
-        dispatch({ type: 'SIGN_IN', token: 'dummy-auth-token' });
+        dispatch({ type: 'SIGN_IN', token: 'token' });
       }
     }),
     []
@@ -103,22 +98,17 @@ export default function App({ navigation }) {
       <NavigationContainer>
         <Stack.Navigator>
           {state.isLoading ? (
-            // We haven't finished checking for the token yet
             <Stack.Screen name="Splash" component={SplashScreen} />
           ) : state.userToken == null ? (
-            // No token found, user isn't signed in
             <Stack.Screen
-              name="SignIn"
-              component={SignInScreen}
+              name="Auth"
+              component={AuthScreen}
               options={{
-                title: 'Sign in',
-                // When logging out, a pop animation feels intuitive
-                animationTypeForReplace: state.isSignout ? 'pop' : 'push',
+                animationTypeForReplace: state.isSignout ? 'pop' : 'push'
               }}
             />
           ) : (
-            // User is signed in
-            <Stack.Screen name="Home" component={HomeScreen} />
+            <Stack.Screen name="SportMeetings" component={SportMeetings} />
           )}
         </Stack.Navigator>
       </NavigationContainer>

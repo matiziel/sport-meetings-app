@@ -7,8 +7,8 @@ public class Paging {
     public class Page {
         public int PageSize { get; set; }
         public int PageNumber { get; set; }
-
     }
+    
     private static readonly int maxPageSize = 40;
     private readonly Page _page;
 

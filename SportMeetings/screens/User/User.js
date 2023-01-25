@@ -1,9 +1,9 @@
 import { useState, useContext, useEffect } from 'react';
 import { Button, Text, TextInput, View } from 'react-native';
-import AuthContext from '../context/AuthContext.js';
-import TestService from '../services/TestService.js';
+import AuthContext from '../../context/AuthContext.js'
+import TestService from '../../services/TestService.js';
 
-function HomeScreen() {
+function UserScreen() {
     const [value, setValue] = useState('');
     const { signOut } = useContext(AuthContext);
 
@@ -24,4 +24,4 @@ function HomeScreen() {
     );
 }
 
-export default HomeScreen;
+export default UserScreen;
